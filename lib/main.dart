@@ -1,115 +1,222 @@
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get_storage/get_storage.dart';
+import 'AboutUs.dart';
+import 'Admin/AddNewAdmin.dart';
+import 'Admin/AdminDashboard.dart';
+import 'Admin/AdminLogin.dart';
+import 'Admin/BlockStudents.dart';
+import 'Admin/BlockTutors.dart';
+import 'Admin/ChangePassword.dart';
+import 'Admin/ShowAppFeedback.dart';
+import 'Admin/StudentDetail.dart';
+import 'Admin/StudentReportsList.dart';
+import 'Admin/StudentsLists.dart';
+import 'Admin/TutorCancel.dart';
+import 'Admin/TutorDetail.dart';
+import 'Admin/TutorReportsList.dart';
+import 'Admin/TutorRequestList.dart';
+import 'Admin/TutorsLists.dart';
+import 'AppFeedback/AppFeedback.dart';
+import 'Chat/Chat.dart';
+import 'Cloud Messaging/NotificationServices.dart';
+import 'Map/MapScreen.dart';
+import 'OTPMODULE/OTP.dart';
+import 'Splashes/AskRoll.dart';
+import 'Splashes/WellcomeParent.dart';
+import 'Splashes/WellcomeSearch.dart';
+import 'Splashes/WellcomeSelect.dart';
+import 'Splashes/WellcomeStudy.dart';
+import 'Student/FeedbackRatingToTutor.dart';
+import 'Student/Payment.dart';
+import 'Student/RecommendedTutor.dart';
+import 'Student/StudentBlock.dart';
+import 'Student/StudentChatRoom.dart';
+import 'Student/StudentEditProfile.dart';
+import 'Student/StudentProfile.dart';
+import 'Student/TutorDetailForStudent.dart';
+import 'Student/TutorNearest.dart';
+import 'Student/TutorSearch.dart';
+import 'Tutor/PayedStudentsRoom.dart';
+import 'Tutor/StudentDetailForTutor.dart';
+import 'Tutor/TutorBlock.dart';
+import 'Tutor/TutorChatRoom.dart';
+import 'Tutor/TutorEditProfile.dart';
+import 'Tutor/TutorHome.dart';
+import 'Tutor/TutorProfile.dart';
+import 'Tutor/TutorRating.dart';
+import 'TutorReports/TutorReportForm.dart';
 
-void main() {
+String role = "null";
+final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+final FirebaseAuth _auth = FirebaseAuth.instance;
+User? user;
+getRole() async {
+  user = _auth.currentUser;
+  if (user != null) {
+    final adminsnapshot =
+    await _firestore.collection('AdminData').doc(user!.uid).get();
+    if (adminsnapshot.exists) {
+      role = 'admin';
+    }
+    final tutorsnapshot =
+    await _firestore.collection('TutorData').doc(user!.uid).get();
+    if (tutorsnapshot.exists) {
+      Map<String, dynamic> data = tutorsnapshot.data() as Map<String, dynamic>;
+      bool status = await data['status'];
+      bool report = await data['Report'];
+      String localRole = GetStorage().read('role');
+      if (localRole == 'tutor') {
+        if (status == false) {
+          role = 'tutorfalse';
+        } else if (report == true) {
+          role = 'reportTrue';
+        } else {
+          role = 'tutor';
+        }
+      }
+    }
+    final studentSnapshot =
+    await _firestore.collection('StudentData').doc(user!.uid).get();
+    if (studentSnapshot.exists) {
+      Map<String, dynamic> data =
+      studentSnapshot.data() as Map<String, dynamic>;
+      bool status = data['status'];
+      bool report = data['Report'];
+      String localRole = GetStorage().read('role');
+      if (localRole == 'student') {
+        if (status == false) {
+          role = 'studentfalse';
+        } else if (report == true) {
+          role = 'studentreporttrue';
+        } else {
+          role = 'student';
+        }
+      }
+    }
+  }
+  print("********RRrOOOLLEE $role");
+}
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
+  NotificationServices().initBackgroundMessaging();
+}
+
+_forgroundListner(){
+  FirebaseMessaging.onMessageOpenedApp.listen((event) {
+    print("new Message listen onMessageOpendApp.");
+  });
+}
+void main() async {
+  await WidgetsFlutterBinding.ensureInitialized();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  _forgroundListner();
+  await Firebase.initializeApp();
+  await GetStorage.init();
+  Get.put(Initializer(), permanent: true);
+  await getRole();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
+  const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Tutor 360",
+      routes: {
+        '/Initializer': (context) => const Initializer(),
+        '/AskRoll': (context) => const AskRoll(),
+        '/AdminLogin': (context) => const AdminLogin(),
+        '/StudentProfile': (context) => const StudentProfile(),
+        '/OTPVerification': (context) => const OTPVerification(),
+        '/TutorProfile': (context) => const TutorProfile(),
+        '/AdminDashboard': (context) => const AdminDashboard(),
+        '/TutorsList': (context) => const TutorsList(),
+        '/StudentList': (context) => const StudentList(),
+        '/AddNewAdmin': (context) => const AddNewAdmin(),
+        '/TutorDetail': (context) => const TutorDetail(),
+        '/TutorDetailForStudent': (context) => const TutorDetailForStudent(),
+        '/TutorRequestList': (context) => const TutorRequestList(),
+        '/TutorSearch': (context) => const TutorSearch(),
+        '/TutorHome': (context) => const TutorHome(),
+        '/StudentDetail': (context) => const StudentDetail(),
+        '/BlockStudents': (context) => const BlockStudents(),
+        '/ChangePassword': (context) => const ChangePassword(),
+        '/Chat': (context) => Chat(),
+        '/StudentChatRoom': (context) => StudentChatRoom(),
+        '/TutorBlock': (context) => TutorBlock(),
+        '/BlockTutors': (context) => BlockTutors(),
+        '/TutorChatRoom': (context) => TutorChatRoom(),
+        '/StudentDetailForTutor': (context) => StudentDetailForTutor(),
+        '/TutorReportForm': (context) => TutorReportForm(),
+        '/StudentReportsList': (context) => StudentReportsList(),
+        '/TutorReportsList': (context) => TutorReportsList(),
+        '/FeedbackRatingToTutor': (context) => FeedbackRatingToTutor(),
+        '/StudentEditProfile': (context) => StudentEditProfile(),
+        '/TutorEditProfile': (context) => TutorEditProfile(),
+        '/StudentBlock': (context) => StudentBlock(),
+        '/TutorRating': (context) => TutorRating(),
+        '/Payment': (context) => Payment(),
+        '/TutorNearest': (context) => TutorNearest(),
+        '/PayedStudentsRoom': (context) => PayedStudentsRoom(),
+        '/MapScreen': (context) => MapScreen(),
+        '/RecommendedTutor': (context) => RecommendedTutor(),
+        '/WellcomeParent': (context) => WellcomeParent(),
+        '/WellcomeSearch': (context) => WellcomeSearch(),
+        '/WellcomeSelect': (context) => WellcomeSelect(),
+        '/WellcomeStudy': (context) => WellcomeStudy(),
+        '/AboutUs': (context) => AboutUs(),
+        '/TutorCancel': (context) => TutorCancel(),
+        '/AppFeedback': (context) => AppFeedback(),
+        '/ShowAppFeedback': (context) => ShowAppFeedback(),
+
+      },
+      initialRoute: '/Initializer',
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class Initializer extends StatefulWidget {
+  const Initializer({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<Initializer> createState() => _InitializerState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+class _InitializerState extends State<Initializer> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    print("*********Init function callllll**************");
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    print("****************return widget************");
+    return role == null
+        ? const WellcomeParent()
+        : role == 'admin'
+        ? const AdminDashboard()
+        : role == 'student'
+        ? const TutorSearch()
+        : role == 'tutor'
+        ? const TutorHome()
+        : role == 'tutorfalse'
+        ? TutorBlock()
+        : role == 'reportTrue'
+        ? const TutorBlock()
+        : role == 'studentfalse'
+        ? const StudentBlock()
+        : role == 'studentreporttrue'
+        ? const StudentBlock()
+        : const WellcomeParent();
   }
 }
