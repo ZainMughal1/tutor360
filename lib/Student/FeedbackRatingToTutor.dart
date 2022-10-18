@@ -137,8 +137,6 @@ class _FeedbackRatingToTutorState extends State<FeedbackRatingToTutor> {
             ),
     );
   }
-
-
   paymentDoneCheck()async{
     List classStudentIds = [];
     String stuId = _auth.currentUser!.uid;
@@ -165,7 +163,6 @@ class _FeedbackRatingToTutorState extends State<FeedbackRatingToTutor> {
         setState(() {
           isLoading = true;
         });
-        if(await feedbackResponse()){
           await checkDoubleFeedback();
           if(repeatFlag== true){
             submitFun();
@@ -173,13 +170,7 @@ class _FeedbackRatingToTutorState extends State<FeedbackRatingToTutor> {
           else{
             await updateFeedback();
           }
-        }//if
-        else{
-          setState(() {
-            isLoading = false;
-          });
-          Fluttertoast.showToast(msg: "Sorry Your Feedback is Fake");
-        }
+        //if
       }else{
         Fluttertoast.showToast(msg: "Give Rating.");
       }
@@ -189,29 +180,29 @@ class _FeedbackRatingToTutorState extends State<FeedbackRatingToTutor> {
     }
   }
 
-  Future<bool> feedbackResponse() async {
-    final msg = feedbackC.text;
-    var url = Uri.parse("https://fake-review-check.herokuapp.com/");
-    var response = await http.post(url, headers: {
-      "Accept": "application/json"
-    }, body: {
-      'review': msg,
-    });
-    var resp = response.body;
-    log(resp.toString());
-    var decodedJson = json.decode(resp);
-    var predictionn = decodedJson['predicted'];
-    var responses = jsonDecode(response.body);
-    var prediction = responses['result']['predicted'];
-    predictionn = prediction.toString();
-    print("${predictionn} this the single response");
-    if(predictionn == "1"){
-      return true;
-    }
-    else{
-      return false;
-    }
-  } //feedbackResponse
+  // Future<bool> feedbackResponse() async {
+  //   final msg = feedbackC.text;
+  //   var url = Uri.parse("https://fake-review-check.herokuapp.com/");
+  //   var response = await http.post(url, headers: {
+  //     "Accept": "application/json"
+  //   }, body: {
+  //     'review': msg,
+  //   });
+  //   var resp = response.body;
+  //   log(resp.toString());
+  //   var decodedJson = json.decode(resp);
+  //   var predictionn = decodedJson['predicted'];
+  //   var responses = jsonDecode(response.body);
+  //   var prediction = responses['result']['predicted'];
+  //   predictionn = prediction.toString();
+  //   print("${predictionn} this the single response");
+  //   if(predictionn == "1"){
+  //     return true;
+  //   }
+  //   else{
+  //     return false;
+  //   }
+  // } //feedbackResponse
 
   checkDoubleFeedback()async{
     int docNum = 0;

@@ -11,7 +11,6 @@ import '../Admin/FullScreenImage.dart';
 import '../Chat/Chat.dart';
 import '../Chat/ChatAuth.dart';
 import '../StudentReports/StudentReportForm.dart';
-import '../Styles/Buttons.dart';
 import '../Styles/Clrs.dart';
 import '../Styles/TextStyles.dart';
 import '../Tutor/TutorModel.dart';
@@ -306,13 +305,6 @@ class _TutorDetailForStudentState extends State<TutorDetailForStudent> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          Get.toNamed('/Payment', arguments: uid);
-        },
-        child: const Icon(Icons.payment),
-        backgroundColor: c1,
       ),
     );
   }
