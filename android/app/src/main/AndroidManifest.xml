@@ -7,6 +7,8 @@
         android:label="tutor360"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+       <meta-data android:name="com.google.android.geo.API_KEY"
+           android:value="AIzaSyDwjvDNn1unlL6CZUywZlQ-BoGBKku-5fo"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
