@@ -185,7 +185,7 @@ FR-73 System shall provide the facility to the tutor to select courses from the 
 
 
 
-Here are some Screenshots by Student role.
+**Here are some Screenshots by Student role.**
 
 
 
